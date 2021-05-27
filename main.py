@@ -3,7 +3,7 @@ import pyupbit
 import numpy as np
 
 config = configparser.ConfigParser()
-config.read(r'config/config.ini')
+config.read(r"config/config.ini")
 
 access_key = config['DEFAULT']['ACCESS_KEY'] 
 secret_key = config['DEFAULT']['SECRET_KEY'] 
@@ -13,7 +13,7 @@ secret_key = config['DEFAULT']['SECRET_KEY']
 #print(pyupbit.get_tickers(fiat="KRW"))
 
 ticker_BTC = "KRW-BTC" #비트코인
-ticker_ETC = "KRW-ETC" #이클
+ticker_ETC = "KRW-ETC" #이더리움 클래식
 ticker_QTUM = "KRW-QTUM" #퀀텀
 ticker_EOS = "KRW-EOS" #EOS
 
@@ -59,6 +59,12 @@ def get_ror(k, ticker):
   
   return ror
 
+r_list = []
 for k in np.arange(0.1, 1.0, 0.1):
   ror = get_ror(k, ticker_QTUM)
   print("누적수익률(fee고려) ==> k:{:.1}: {}".format(k,ror))
+
+  r_list.append(ror)
+
+v = (int(r_list.index(max(r_list)))+1)/10
+print(type(v))
