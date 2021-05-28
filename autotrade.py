@@ -27,6 +27,7 @@ def get_target_price(ticker, k):
 def get_start_time(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="minute240", count=1)
     start_time = df.index[0]
+    print('start_time=',start_time,sep=' ')
     return start_time
 
 # 60시간(4시간x15) 이동평균선 계산
@@ -79,6 +80,8 @@ def find_k(ticker):
         r_list.append(ror)
     #print(r_list)
     k = (int(r_list.index(max(r_list)))+1)/10
+
+    print('k_value=',k,sep=' ')
     return k
 
 
@@ -95,8 +98,10 @@ ticker_KRW = "KRW-KRW" #원화
 
 # 자동매매 시작
 
-start_time = get_start_time(ticker=ticker_ETC)
-k_value = find_k(ticker=ticker_ETC)
+today_ticker = ticker_ETC
+
+start_time = get_start_time(ticker=today_ticker)
+k_value = find_k(ticker=today_ticker)
 
 while True:
     try:
@@ -107,26 +112,27 @@ while True:
 
         # 12시간 동안,
         if start_time < now < end_time - datetime.timedelta(seconds=10):
-            target_price = get_target_price(ticker=ticker_ETC, k=k_value)
-            ma15 = get_ma15(ticker=ticker_ETC)
-            current_price = get_current_price(ticker=ticker_ETC)
+            target_price = get_target_price(ticker=today_ticker, k=k_value)
+            ma15 = get_ma15(ticker=today_ticker)
+            current_price = get_current_price(ticker=today_ticker)
+            print(now)
             print('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
 
             if target_price < current_price and ma15 < current_price:
                 krw = get_balance(ticker_KRW)
                 if krw > 5000:
-                    upbit.buy_market_order(ticker_ETC, krw*0.9995) # 수수료 0.9995
+                    upbit.buy_market_order(today_ticker, krw*0.9995) # 수수료 0.9995
                     while state == 'done':
-                        state = upbit.get_order(get_order_uuid(ticker=ticker_ETC))['state']
-                        coin_volume = upbit.get_order(get_order_uuid(ticker=ticker_ETC))['volume']
+                        state = upbit.get_order(get_order_uuid(ticker=today_ticker))['state']
+                        coin_volume = upbit.get_order(get_order_uuid(ticker=today_ticker))['volume']
                     print('구매완료')
         else:
             #btc = get_balance(ticker_ETC)
             if coin_volume > 0.00008:
-                upbit.sell_market_order(ticker_ETC, coin_volume*0.9995)
+                upbit.sell_market_order(today_ticker, coin_volume*0.9995)
                 print('판매완료')
                 coin_volume = 0
-                k_value = find_k(ticker=ticker_ETC)
+                k_value = find_k(ticker=today_ticker)
                 
         time.sleep(3)
     except Exception as e:
