@@ -132,6 +132,7 @@ while True:
             target_price = get_target_price(ticker=today_ticker, k=k_value)
             ma15 = get_ma15(ticker=today_ticker)
             current_price = get_current_price(ticker=today_ticker)
+            logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
             if target_price < current_price and ma15 < current_price:
                 logger.info('Meet the condition - buy')
                 logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
