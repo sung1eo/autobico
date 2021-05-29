@@ -31,7 +31,7 @@ def get_target_price(ticker, k):
 def get_start_time(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="minute240", count=1)
     start_time = df.index[0]
-    print('start_time=',start_time,sep=' ')
+    logger.info('start_time={}'.format(start_time))
     return start_time
 
 # 60시간(4시간x15) 이동평균선 계산
@@ -84,7 +84,7 @@ def find_k(ticker):
         r_list.append(ror)
     #print(r_list)
     k = (int(r_list.index(max(r_list)))+1)/10
-    logger.info('k_value=',k,sep=' ')
+    logger.info('k_value={}'.format(k))
     return k
 
 
@@ -92,7 +92,7 @@ def find_k(ticker):
 
 logger = logging.getLogger()
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # log 출력
@@ -141,7 +141,7 @@ while True:
                         upbit.buy_market_order(today_ticker, krw*0.9995) # 수수료 0.9995
                         logger.info('EVENT:구매 완료')
                     except Exception as e:
-                        logger.debug(e)
+                        logger.info(e)
         else:
             coin_volume = get_balance(today_ticker)
             if coin_volume > 0.00008:
@@ -150,8 +150,8 @@ while True:
                     logger.info('EVENT:판매 완료, 코인 갯수:',coin_volume,sep=' ')
                     k_value = find_k(ticker=today_ticker)
                 except Exception as e:
-                    logger.debug(e)
+                    logger.info(e)
         time.sleep(3)
     except Exception as e:
-        logger.debug(e)
+        logger.info(e)
         time.sleep(3)
