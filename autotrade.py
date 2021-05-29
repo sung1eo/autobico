@@ -84,8 +84,7 @@ def find_k(ticker):
         r_list.append(ror)
     #print(r_list)
     k = (int(r_list.index(max(r_list)))+1)/10
-
-    print('k_value=',k,sep=' ')
+    logger.info('k_value=',k,sep=' ')
     return k
 
 
@@ -93,7 +92,7 @@ def find_k(ticker):
 
 logger = logging.getLogger()
 
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # log 출력
@@ -107,7 +106,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 upbit = pyupbit.Upbit(access_key, secret_key)
-print("autotrade start")
+logger.info("autotrade start")
 
 ticker_BTC = "KRW-BTC" #비트코인
 ticker_ETC = "KRW-ETC" #이더리움 클래식
@@ -132,7 +131,7 @@ while True:
             target_price = get_target_price(ticker=today_ticker, k=k_value)
             ma15 = get_ma15(ticker=today_ticker)
             current_price = get_current_price(ticker=today_ticker)
-            logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
+            #logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
             if target_price < current_price and ma15 < current_price:
                 logger.info('Meet the condition - buy')
                 logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
@@ -142,7 +141,7 @@ while True:
                         upbit.buy_market_order(today_ticker, krw*0.9995) # 수수료 0.9995
                         logger.info('EVENT:구매 완료')
                     except Exception as e:
-                        logger.info(e)
+                        logger.debug(e)
         else:
             coin_volume = get_balance(today_ticker)
             if coin_volume > 0.00008:
@@ -151,8 +150,8 @@ while True:
                     logger.info('EVENT:판매 완료, 코인 갯수:',coin_volume,sep=' ')
                     k_value = find_k(ticker=today_ticker)
                 except Exception as e:
-                    logger.info(e)
+                    logger.debug(e)
         time.sleep(3)
     except Exception as e:
-        logger.info(e)
+        logger.debug(e)
         time.sleep(3)
