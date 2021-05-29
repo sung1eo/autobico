@@ -3,6 +3,7 @@ import pyupbit
 import numpy as np
 import datetime
 import configparser
+import logging
 
 config = configparser.ConfigParser()
 config.read(r"config/config.ini")
@@ -12,6 +13,7 @@ secret_key = config['DEFAULT']['SECRET_KEY']
 
 # 타겟 금액 계산
 def get_target_price(ticker, k):
+    #print('Reset target price')
     df = pyupbit.get_ohlcv(ticker, interval="minute240", count=4) 
     #print(df)
     last_mid = df.iloc[-4] # 12시간 전
@@ -48,11 +50,11 @@ def get_balance(ticker):
                 return 0
     return 0
 
-# 주문의 uuid 조회
-def get_order_uuid(ticker):
-    orders = upbit.get_order()
-    uuid = orders['uuid']
-    return uuid
+# # 주문의 uuid 조회
+# def get_order_uuid(ticker):
+#     orders = upbit.get_order(ticker)
+#     uuid = orders['uuid']
+#     return uuid
 
 # 현재 구매 가능한 가격 조회
 def get_current_price(ticker):
@@ -87,6 +89,21 @@ def find_k(ticker):
 
 #print(get_target_price(ticker=ticker_ETC, k=0.5))
 
+logger = logging.getLogger()
+
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# log 출력
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
+
+# log를 파일에 출력
+file_handler = logging.FileHandler('my.log')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
 upbit = pyupbit.Upbit(access_key, secret_key)
 print("autotrade start")
 
@@ -108,33 +125,30 @@ while True:
         now = datetime.datetime.now()
         end_time = start_time + datetime.timedelta(hours=12)
 
-        coin_volume = 0
-
         # 12시간 동안,
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker=today_ticker, k=k_value)
             ma15 = get_ma15(ticker=today_ticker)
             current_price = get_current_price(ticker=today_ticker)
-            print(now)
-            print('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
-
+            logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
             if target_price < current_price and ma15 < current_price:
                 krw = get_balance(ticker_KRW)
                 if krw > 5000:
-                    upbit.buy_market_order(today_ticker, krw*0.9995) # 수수료 0.9995
-                    while state == 'done':
-                        state = upbit.get_order(get_order_uuid(ticker=today_ticker))['state']
-                        coin_volume = upbit.get_order(get_order_uuid(ticker=today_ticker))['volume']
-                    print('구매완료')
+                    try: 
+                        upbit.buy_market_order(today_ticker, krw*0.9995) # 수수료 0.9995
+                        logger.info('EVENT:구매 완료')
+                    except Exception as e:
+                        logger.info(e)
         else:
-            #btc = get_balance(ticker_ETC)
+            coin_volume = get_balance(today_ticker)
             if coin_volume > 0.00008:
-                upbit.sell_market_order(today_ticker, coin_volume*0.9995)
-                print('판매완료')
-                coin_volume = 0
-                k_value = find_k(ticker=today_ticker)
-                
+                try: 
+                    upbit.sell_market_order(today_ticker, coin_volume*0.9995)
+                    logger.info('EVENT:판매 완료')
+                    k_value = find_k(ticker=today_ticker)
+                except Exception as e:
+                    logger.info(e)
         time.sleep(3)
     except Exception as e:
-        print(e)
+        logger.info(e)
         time.sleep(3)
