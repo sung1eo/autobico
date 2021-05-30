@@ -124,8 +124,8 @@ k_value = find_k(ticker=today_ticker)
 while True:
     try:
         now = datetime.datetime.now()
-        end_time = start_time + datetime.timedelta(hours=12)
         start_time = get_start_time(ticker=today_ticker)
+        end_time = start_time + datetime.timedelta(hours=12)
         # 12시간 동안,
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker=today_ticker, k=k_value)
