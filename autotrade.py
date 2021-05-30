@@ -31,7 +31,7 @@ def get_target_price(ticker, k):
 def get_start_time(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="minute240", count=1)
     start_time = df.index[0]
-    logger.info('start_time={}'.format(start_time))
+    #logger.info('start_time={}'.format(start_time))
     return start_time
 
 # 60시간(4시간x15) 이동평균선 계산
@@ -64,8 +64,8 @@ def get_current_price(ticker):
 
 def get_ror(k, ticker):
     df = pyupbit.get_ohlcv(ticker, interval = 'minutes240', count=200)
-    c = [-1-(i*3) for i in range(0,50)]
-    df = df.iloc[c] # 12시간 간격으로 자름
+    #c = [-1-(i*3) for i in range(0,50)]
+    #df = df.iloc[c] # 12시간 간격으로 자름
     
     df['range'] = (df['high'] - df['low']) * k
     df['target'] = df['open'] + df['range'].shift(1) 
@@ -118,14 +118,14 @@ ticker_KRW = "KRW-KRW" #원화
 
 today_ticker = ticker_ETC
 
-start_time = get_start_time(ticker=today_ticker)
+
 k_value = find_k(ticker=today_ticker)
 
 while True:
     try:
         now = datetime.datetime.now()
         end_time = start_time + datetime.timedelta(hours=12)
-
+        start_time = get_start_time(ticker=today_ticker)
         # 12시간 동안,
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker=today_ticker, k=k_value)
