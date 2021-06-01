@@ -38,7 +38,7 @@ def get_target_price(ticker, k):
 
 # 시작 시간 계산
 def get_start_time(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=1)
+    df = pyupbit.get_ohlcv(ticker, interval="minute30", count=1)
     start_time = df.index[0]
     #logger.info('start_time={}'.format(start_time))
     # if start_time.minute != 30:
