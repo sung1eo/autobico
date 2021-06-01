@@ -38,7 +38,7 @@ def get_target_price(ticker, k):
 
 # 시작 시간 계산
 def get_start_time(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute30", count=1)
+    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=1)
     start_time = df.index[0]
     #logger.info('start_time={}'.format(start_time))
     # if start_time.minute != 30:
@@ -46,9 +46,9 @@ def get_start_time(ticker):
     #print(start_time)
     return start_time
 
-# 60시간(4시간x15) 이동평균선 계산
+# 900분(30분*30회) 이동평균선 계산
 def get_ma15(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=15)
+    df = pyupbit.get_ohlcv(ticker, interval="minute30", count=30)
     ma15 = df['close'].rolling(15).mean().iloc[-1]
     return ma15
 
@@ -145,15 +145,16 @@ k_value = find_k(ticker=today_ticker)
 while True:
     try:
         now = datetime.datetime.now(KST)
-        start_time = get_start_time(ticker=today_ticker) + datetime.timedelta(minutes=30)
+        start_time = get_start_time(ticker=today_ticker) 
         end_time = start_time + datetime.timedelta(hours=4)
         start_time, end_time = start_time.replace(tzinfo=KST), end_time.replace(tzinfo=KST)
+        print(now, start_time, end_time)
         # 4시간
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker=today_ticker, k=k_value)
             ma15 = get_ma15(ticker=today_ticker)
             current_price = get_current_price(ticker=today_ticker)
-            logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
+            logger.info('구매 목표가:{}//이동 평균선:{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
             if target_price < current_price and ma15 < current_price:
                 logger.info('Meet the condition - buy')
                 #logger.info('구매 목표가:{}//이동 평균선(60시간):{:.1f}//현재 금액:{}'.format(target_price, ma15, current_price))
