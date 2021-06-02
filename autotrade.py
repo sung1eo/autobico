@@ -148,7 +148,7 @@ while True:
         now = datetime.datetime.now(KST) #지금시간... 16시 1분
         end_time = start_time + datetime.timedelta(hours=4)
         start_time, end_time = start_time.replace(tzinfo=KST), end_time.replace(tzinfo=KST)
-        #print(now, start_time, end_time)
+        logger.info(start_time, end_time)
         # 4시간
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker=today_ticker, k=k_value)
@@ -172,10 +172,11 @@ while True:
                 try: 
                     upbit.sell_market_order(today_ticker, coin_volume*0.9995)
                     logger.info('EVENT:판매 완료, 코인 갯수:',coin_volume)
-                    k_value = find_k(ticker=today_ticker)
-                    start_time = get_start_time(ticker=today_ticker) # 지금시간 기준 30분 전이어야 함.
                 except Exception as e:
                     logger.info(e)
+            k_value = find_k(ticker=today_ticker)
+            start_time = get_start_time(ticker=today_ticker) # 지금시간 기준 30분 전이어야 함.
+
         time.sleep(3)
     except Exception as e:
         logger.info(e)
