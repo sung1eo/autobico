@@ -1,3 +1,0 @@
-language = "python3"
-run = "python autotrade.py"
-#run = "python test.py"
